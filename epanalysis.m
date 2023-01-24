@@ -61,9 +61,9 @@ disp('Cohort generated.')
 
 ga = MRIGraphAnalysisWU(cohort, Structure(), ...
     MRIGraphAnalysis.CORR, MRIGraphAnalysis.CORR_PEARSON, ...  % Choose one: CORR_PEARSON CORR_SPEARMAN CORR_KENDALL CORR_PARTIALPEARSON CORR_PARTIALSPEARMAN
-    MRIGraphAnalysis.NEG, MRIGraphAnalysis.NEG_ZERO ... Choose one: NEG_ZERO NEG_NONE NEG_ABS
+    MRIGraphAnalysis.NEG, MRIGraphAnalysis.NEG_ZERO ... % Choose one: NEG_ZERO NEG_NONE NEG_ABS
     );
- 
+
 disp(' ')
 disp('MEASURES')
 for m = GraphWU.MEASURES_WU
@@ -111,13 +111,18 @@ clear gr;
                 gr = ga.getCohort().getGroup(groupnumber);
 
                 if Graph.isglobal(measurecode)
-                    disp('=== === ===')
-                    disp(['Group number = ' int2str(groupnumber)])
-                    disp(['Group name = ' gr.getPropValue(Group.NAME)])
-                    disp(['Measure code = ' int2str(measurecode) ' GLOBAL MEASURE'])
-                    disp(['Measure name = ' Graph.NAME{measurecode}])
-                    disp(['Measure value = ' num2str(m.getProp(MRIMeasureWU.VALUES1))])
-                    disp('=== === ===')
+                    file_name = strcat(Graph.NAME{measurecode},'_',gr.getPropValue(Group.NAME),'.txt');
+                    file_path = fullfile('/Users/aaclouse/Desktop/measures/',file_name);
+                    fid = fopen(file_path,'w');
+                   
+                    fprintf(fid,'=== === ===\n');
+                    fprintf(fid,'Group number = %d\n', groupnumber);
+                    fprintf(fid,'Group name = %s\n', gr.getPropValue(Group.NAME));
+                    fprintf(fid,'Measure code = %d GLOBAL MEASURE\n', measurecode);
+                    fprintf(fid,'Measure name = %s\n', Graph.NAME{measurecode});
+                    fprintf(fid,'Measure value = %f\n', m.getProp(MRIMeasureWU.VALUES1));
+                    fprintf(fid,'=== === ===\n');
+                    fclose(fid);
                 end
 
                 if Graph.isnodal(measurecode)
@@ -129,12 +134,17 @@ clear gr;
 
                     values = m.getProp(MRIMeasureWU.VALUES1);
                     disp(['Average (over regions) measure value = ' num2str(mean(values))])
-
+                    
+                    file_name = strcat(Graph.NAME{measurecode},'_',gr.getPropValue(Group.NAME),'.csv');
+                    file_path = fullfile('/Users/aaclouse/Desktop/measures/',file_name);
+                    fid = fopen(file_path,'w');
+                    fprintf(fid,'%s,vertex\n',Graph.NAME{measurecode});
                     ba = ga.getBrainAtlas();
                     for i = 1:1:ba.length()
                         br = ba.get(i);
-                        disp([num2str(values(i)) ' - ' br.getPropValue(BrainRegion.NAME)])
+                        fprintf(fid,'%f,%s\n', values(i), br.getPropValue(BrainRegion.NAME));
                     end
+                    fclose(fid);
 
                     disp('=== === ===')
                 end
@@ -165,16 +175,21 @@ clear gr;
                 gr2 = ga.getCohort().getGroup(groupnumber2)
 
                 if Graph.isglobal(measurecode)
-                    disp('=== === ===')
-                    disp(['Group numbers = ' int2str(groupnumber1) ' and ' int2str(groupnumber2)])
-                    disp(['Group names = ' gr1.getPropValue(Group.NAME) ' and ' gr2.getPropValue(Group.NAME)])
-                    disp(['Measure code = ' int2str(measurecode) ' GLOBAL MEASURE'])
-                    disp(['Measure name = ' Graph.NAME{measurecode}])
-                    disp(['Difference = ' num2str(c.diff()) ])
-                    disp(['p-value (1) = ' num2str(c.getProp(MRIComparisonWU.PVALUE1))])
-                    disp(['p-value (2) = ' num2str(c.getProp(MRIComparisonWU.PVALUE2))])
-                    disp(['confidence interval = ' num2str(c.CI(5)') ])
-                    disp('=== === ===')
+                    file_name = strcat(Graph.NAME{measurecode},'_',gr1.getPropValue(Group.NAME),'_',gr2.getPropValue(Group.NAME),'.txt');
+                    file_path = fullfile('/Users/aaclouse/Desktop/comparisons/',file_name);
+                    fid = fopen(file_path,'w');
+
+                    fprintf(fid,'=== === ===\n');
+                    fprintf(fid,'Group numbers = %d and %d\n', groupnumber1, groupnumber2);
+                    fprintf(fid,'Group names = %s and %s\n', gr1.getPropValue(Group.NAME), gr2.getPropValue(Group.NAME));                    fprintf(fid,'Measure code = %d GLOBAL MEASURE\n', measurecode);
+                    fprintf(fid,'Measure name = %s\n', Graph.NAME{measurecode});
+                    fprintf(fid,'Difference = %f\n', c.diff());
+                    fprintf(fid,'p-value (1) = %f\n', c.getProp(MRIComparisonWU.PVALUE1));
+                    fprintf(fid,'p-value (2) = %f\n', c.getProp(MRIComparisonWU.PVALUE2));
+                    fprintf(fid,'confidence interval = %f\n', c.CI(5));
+                    fprintf(fid,'=== === ===\n');
+                    fclose(fid);
+
                 end
 
                 if Graph.isnodal(measurecode)
@@ -194,11 +209,17 @@ clear gr;
                     disp(['con.int.do  (per region) = ' num2str(ci(1,:))])
                     disp(['con.int.up  (per region) = ' num2str(ci(2,:))])
 
+                    file_name = strcat(Graph.NAME{measurecode},'_',gr1.getPropValue(Group.NAME),'_',gr2.getPropValue(Group.NAME),'.csv');
+                    file_path = fullfile('/Users/aaclouse/Desktop/comparisons/',file_name);
+                    fid = fopen(file_path,'w');
+                    fprintf(fid,'differences,vertex,p1,p2,ci_low,ci_high\n');
+                    
                     ba = ga.getBrainAtlas();
                     for i = 1:1:ba.length()
                         br = ba.get(i);
-                        disp([num2str(values(i)) '  -  ' br.getPropValue(BrainRegion.NAME) '  -  p1=' num2str(p1(i)) ' p2=' num2str(p2(i)) ' ci =[' num2str(ci(1,i)) ',' num2str(ci(2,i)) ']'])
+                        fprintf(fid,'%f,%s,%f,%f,%f,%f\n',values(i), br.getPropValue(BrainRegion.NAME),p1(i),p2(i),ci(1,i),ci(2,i));
                     end
+                    fclose(fid);
 
                     disp('=== === ===')
                 end
@@ -223,17 +244,23 @@ clear gr;
                 gr = ga.getCohort().getGroup(groupnumber);
 
                 if Graph.isglobal(measurecode)
-                    disp('=== === ===')
-                    disp(['Group number = ' int2str(groupnumber)])
-                    disp(['Group name = ' gr.getPropValue(Group.NAME)])
-                    disp(['Measure code = ' int2str(measurecode) ' GLOBAL MEASURE'])
-                    disp(['Measure name = ' Graph.NAME{measurecode}])
-                    disp(['Measure value = ' num2str(n.getProp(MRIRandomComparisonWU.VALUES1))])
-                    disp(['Random graph value = ' num2str(n.getProp(MRIRandomComparisonWU.RANDOM_COMP_VALUES))])
-                    disp(['p-value (1) = ' num2str(n.getProp(MRIRandomComparisonWU.PVALUE1))])
-                    disp(['p-value (2) = ' num2str(n.getProp(MRIRandomComparisonWU.PVALUE2))])
-                    disp(['confidence interval = ' num2str(n.CI(5)') ])
-                    disp('=== === ===')
+                    file_name = strcat(Graph.NAME{measurecode},'_rcomp_',gr.getPropValue(Group.NAME),'.txt');
+                    file_path = fullfile('/Users/aaclouse/Desktop/random_comp/',file_name);
+                    fid = fopen(file_path,'w');
+
+                    fprintf(fid,'=== === ===\n');
+                    fprintf(fid,'Group number = %d\n', groupnumber);
+                    fprintf(fid,'Group name = %s\n', gr.getPropValue(Group.NAME));
+                    fprintf(fid,'Measure code = %d GLOBAL MEASURE\n', measurecode);
+                    fprintf(fid,'Measure name = %s\n', Graph.NAME{measurecode});
+                    fprintf(fid,'Measure value = %f\n', n.getProp(MRIRandomComparisonWU.VALUES1));
+                    fprintf(fid,'Random graph value = %f\n', n.getProp(MRIRandomComparisonWU.RANDOM_COMP_VALUES));
+                    fprintf(fid,'p-value (1) = %f\n', n.getProp(MRIRandomComparisonWU.PVALUE1));
+                    fprintf(fid,'p-value (2) = %f\n', n.getProp(MRIRandomComparisonWU.PVALUE2));
+                    fprintf(fid,'confidence interval = %f\n', n.CI(5));
+                    fprintf(fid,'=== === ===\n');
+                    fclose(fid);
+                    
                 end
             
                 if Graph.isnodal(measurecode)
@@ -256,11 +283,17 @@ clear gr;
                     disp(['con.int.do  (per region) = ' num2str(ci(1,:))])
                     disp(['con.int.up  (per region) = ' num2str(ci(2,:))])
 
+                    file_name = strcat(Graph.NAME{measurecode},'_rcomp_',gr.getPropValue(Group.NAME),'.csv');
+                    file_path = fullfile('/Users/aaclouse/Desktop/random_comp/',file_name);
+                    fid = fopen(file_path,'w');
+                    fprintf(fid,'differences,vertex,p1,p2,ci_low,ci_high\n');
+                    
                     ba = ga.getBrainAtlas();
                     for i = 1:1:ba.length()
                         br = ba.get(i);
-                        disp([num2str(values(i)) '  -  ' br.getPropValue(BrainRegion.NAME) '  -  p1=' num2str(p1(i)) ' p2=' num2str(p2(i)) ' ci =[' num2str(ci(1,i)) ',' num2str(ci(2,i)) ']'])
+                        fprintf(fid,'%f,%s,%f,%f,%f,%f\n',values(i), br.getPropValue(BrainRegion.NAME),p1(i),p2(i),ci(1,i),ci(2,i));
                     end
+                    fclose(fid);
                 
                     disp('=== === ===')
                 end            

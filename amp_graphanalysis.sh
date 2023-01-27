@@ -92,3 +92,26 @@ echo "Amygdala .byu atlas: $amyg_atlas" >> $logdir/README.txt
 echo "" >> $logdir/README.txt
 echo "Scripts, subject lists, and group affiliation are found in the /net_analysis_${timestamp}/00_network_files/network_files directory." >> $logdir/README.txt
 echo "Hopefully this script works!" >> $logdir/README.txt
+
+#create a composite atlas to be used in the matlab script
+if [ -n "$caud_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $caud_atlas >> $logdir/network_files/composite_atlas.byu
+fi
+if [ -n "$put_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $put_atlas >> $logdir/network_files/composite_atlas.byu
+fi
+if [ -n "$pall_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $pall_atlas >> $logdir/network_files/composite_atlas.byu
+fi
+if [ -n "$na_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $na_atlas >> $logdir/network_files/composite_atlas.byu
+fi
+if [ -n "$thal_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $thal_atlas >> $logdir/network_files/composite_atlas.byu
+fi
+if [ -n "$hipp_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $hipp_atlas >> $logdir/network_files/composite_atlas.byu
+fi
+if [ -n "$amyg_atlas" ]; then
+    grep -E '[0-9]+\.[0-9]+' $amyg_atlas >> $logdir/network_files/composite_atlas.byu
+fi

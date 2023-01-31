@@ -1,3 +1,57 @@
+% BRAPH - BRain Analysis using graPH theory
+%
+% This script loads all packages of the BRAPH.
+%
+% BRAPH packages
+%   <a href="matlab:help ">utility</a> - general utility functions
+%   <a href="matlab:help stat">stat</a>    - statistical analysis tools
+%   <a href="matlab:help graph">graph</a>   - graph analysis tools
+%   <a href="matlab:help ds">ds</a>      - data structures
+%   <a href="matlab:help init">init</a>   - initial GUI
+%   <a href="matlab:help atlas">atlas</a>   - brain atlas
+%   <a href="matlab:help mri">mri</a>     - MRI analysis
+%   <a href="matlab:help pet">pet</a>     - PET analysis
+%   <a href="matlab:help fmri">fmri</a>    - fMRI analysis
+%   <a href="matlab:help eeg">eeg</a>     - EEG analysis
+
+%   Author: Mite Mijalkov & Giovanni Volpe
+%   Date: 2016/01/01
+
+clc
+format long
+
+dir = fileparts(which('braph'));
+
+addpath(dir)
+addpath([dir filesep 'utility'])
+addpath([dir filesep 'stat'])
+addpath([dir filesep 'graph'])
+addpath([dir filesep 'ds'])
+addpath([dir filesep 'init'])
+addpath([dir filesep 'atlas'])
+addpath([dir filesep 'mri'])
+addpath([dir filesep 'pet'])
+addpath([dir filesep 'fmri'])
+addpath([dir filesep 'eeg'])
+
+fprintf('\n')
+fprintf(['BRAPH ' BNC.VERSION '\n'])
+fprintf('BRain Analysis using graPH theory\n')
+fprintf([BNC.AUTHORS '\n'])
+fprintf([BNC.COPYRIGHT '\n'])
+fprintf('\n')
+fprintf('loaded <a href="matlab:help utils">utility</a> - general utility functions ...\n')
+fprintf('loaded <a href="matlab:help stat">stat</a> - statistical analysis tools ...\n')
+fprintf('loaded <a href="matlab:help graph">graph</a> - graph analysis tools ...\n')
+fprintf('loaded <a href="matlab:help ds">ds</a> - data structures ...\n')
+fprintf('loaded <a href="matlab:help init">init</a> - initial GUI ...\n')
+fprintf('loaded <a href="matlab:help atlas">atlas</a> - brain atlas ...\n')
+fprintf('loaded <a href="matlab:help mri">mri</a> - MRI analysis ...\n')
+fprintf('loaded <a href="matlab:help pet">pet</a> - PET analysis ...\n')
+fprintf('loaded <a href="matlab:help fmri">fmri</a> - fMRI analysis ...\n')
+fprintf('loaded <a href="matlab:help eeg">eeg</a> - EEG analysis ...\n')
+fprintf('\n')
+
 byuatlas = readmatrix('/Users/aaclouse/Desktop/fep_thal/basalth_R_111Th.byu','FileType','delimitedtext');
 byuatlas(4791:14366,:) = [];
 size(byuatlas)
@@ -29,7 +83,7 @@ subjlist = importdata('/Users/aaclouse/Desktop/fep_thal/subj_list.txt');
 sub = {};
 
 for ampfile = 1:166
-    path = string(subjlist(ampfile)); 
+    path = string(subjlist(ampfile));
     deform = readmatrix(path,'FileType','text').';
     deform(:,4791:9580) = [];
     [~,subjname,~] = fileparts(path);
@@ -69,14 +123,14 @@ disp('MEASURES')
 for m = GraphWU.MEASURES_WU
     name = Graph.NAME{m};
     nodal = Graph.NODAL(m);
-    if nodal 
+    if nodal
         disp([int2str(m) ' - ' name ' (nodal)' ])
     else
         disp([int2str(m) ' - ' name ' (global)' ])
     end
 end
 clear m name nodal;
- 
+
 disp(' ')
 disp('GROUPS')
 for g = 1:1:ga.getCohort.groupnumber()
@@ -89,11 +143,11 @@ clear gr;
     while ~exist('stop')
         disp(' ')
         MCF = input('New measure (M) or comparison (C) or random comparison (R) or finish (F) ? ','S');
-    
+
         switch lower(MCF)
-        
+
             case 'm'
-            
+
                 groupnumber = input('Group number ');
                 if groupnumber > cohort.groupnumber
                     disp(['Group ' int2str(groupnumber) ' is not a valid group'])
@@ -105,7 +159,7 @@ clear gr;
                     disp(['The entered measure is not a valid WU measure'])
                     measurecode = input('Measure number ');
                 end
-            
+
                 ga.calculate(measurecode,groupnumber);
                 m = ga.getMeasure(measurecode,groupnumber);
                 gr = ga.getCohort().getGroup(groupnumber);
@@ -114,7 +168,7 @@ clear gr;
                     file_name = strcat(Graph.NAME{measurecode},'_',gr.getPropValue(Group.NAME),'.txt');
                     file_path = fullfile('/Users/aaclouse/Desktop/measures/',file_name);
                     fid = fopen(file_path,'w');
-                   
+
                     fprintf(fid,'=== === ===\n');
                     fprintf(fid,'Group number = %d\n', groupnumber);
                     fprintf(fid,'Group name = %s\n', gr.getPropValue(Group.NAME));
@@ -134,7 +188,7 @@ clear gr;
 
                     values = m.getProp(MRIMeasureWU.VALUES1);
                     disp(['Average (over regions) measure value = ' num2str(mean(values))])
-                    
+
                     file_name = strcat(Graph.NAME{measurecode},'_',gr.getPropValue(Group.NAME),'.csv');
                     file_path = fullfile('/Users/aaclouse/Desktop/measures/',file_name);
                     fid = fopen(file_path,'w');
@@ -150,7 +204,7 @@ clear gr;
                 end
 
             case 'c'
-            
+
                 groupnumber1 = input('1st group number ');
                 if groupnumber1 > cohort.groupnumber
                     disp(['Group ' int2str(groupnumber1) ' is not a valid group'])
@@ -213,7 +267,7 @@ clear gr;
                     file_path = fullfile('/Users/aaclouse/Desktop/comparisons/',file_name);
                     fid = fopen(file_path,'w');
                     fprintf(fid,'differences,vertex,p1,p2,ci_low,ci_high\n');
-                    
+
                     ba = ga.getBrainAtlas();
                     for i = 1:1:ba.length()
                         br = ba.get(i);
@@ -223,9 +277,9 @@ clear gr;
 
                     disp('=== === ===')
                 end
-           
+
             case 'r'
-            
+
                 groupnumber = input('Group number ');
                 if groupnumber > cohort.groupnumber
                     disp(['Group ' int2str(groupnumber) ' is not a valid group'])
@@ -260,16 +314,16 @@ clear gr;
                     fprintf(fid,'confidence interval = %f\n', n.CI(5));
                     fprintf(fid,'=== === ===\n');
                     fclose(fid);
-                    
+
                 end
-            
+
                 if Graph.isnodal(measurecode)
                     disp('=== === ===')
                     disp(['Group number = ' int2str(groupnumber)])
                     disp(['Group name = ' gr.getPropValue(Group.NAME)])
                     disp(['Measure code = ' int2str(measurecode) ' NODAL MEASURE'])
                     disp(['Measure name = ' Graph.NAME{measurecode}])
-                
+
                     values = n.getProp(MRIRandomComparisonWU.VALUES1);
                     disp(['Average (over regions) measure value = ' num2str(mean(values))])
 
@@ -287,19 +341,18 @@ clear gr;
                     file_path = fullfile('/Users/aaclouse/Desktop/random_comp/',file_name);
                     fid = fopen(file_path,'w');
                     fprintf(fid,'differences,vertex,p1,p2,ci_low,ci_high\n');
-                    
+
                     ba = ga.getBrainAtlas();
                     for i = 1:1:ba.length()
                         br = ba.get(i);
                         fprintf(fid,'%f,%s,%f,%f,%f,%f\n',values(i), br.getPropValue(BrainRegion.NAME),p1(i),p2(i),ci(1,i),ci(2,i));
                     end
                     fclose(fid);
-                
+
                     disp('=== === ===')
-                end            
+                end
 
             otherwise
                 stop = true;
         end
     end
-

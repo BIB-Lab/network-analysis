@@ -53,6 +53,7 @@ fulldate=`date`
 
 #build file tree to store all files made and script output
 mkdir -p $amp_dir/net_analysis_${timestamp}/00_network_files/network_files
+mkdir -p $amp_dir/net_analysis_${timestamp}/00_network_files/amp_composite
 mkdir -p $amp_dir/net_analysis_${timestamp}/measures
 mkdir -p $amp_dir/net_analysis_${timestamp}/comparisons
 mkdir -p $amp_dir/net_analysis_${timestamp}/random_comp
@@ -93,25 +94,99 @@ echo "" >> $logdir/README.txt
 echo "Scripts, subject lists, and group affiliation are found in the /net_analysis_${timestamp}/00_network_files/network_files directory." >> $logdir/README.txt
 echo "Hopefully this script works!" >> $logdir/README.txt
 
-#create a composite atlas to be used in the matlab script
+#create a composite atlas to be used in the matlab script.
 if [ -n "$caud_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $caud_atlas >> $logdir/network_files/composite_atlas.byu
+		#create the composite amp file with deform data
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/basalTh/caud/deform/deform_${line}_caud_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/basalTh/caud/deform/deform_${line}_caud_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Caudate composites and atlas created."
 fi
+
 if [ -n "$put_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $put_atlas >> $logdir/network_files/composite_atlas.byu
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/basalTh/put/deform/deform_${line}_put_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/basalTh/put/deform/deform_${line}_put_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Putamen composites and atlas created."
 fi
+
 if [ -n "$pall_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $pall_atlas >> $logdir/network_files/composite_atlas.byu
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/basalTh/pall/deform/deform_${line}_pall_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/basalTh/pall/deform/deform_${line}_pall_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Palladium composites and atlas created."
 fi
+
 if [ -n "$na_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $na_atlas >> $logdir/network_files/composite_atlas.byu
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/basalTh/na/deform/deform_${line}_na_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/basalTh/na/deform/deform_${line}_na_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Nucleus Accumbens composites and atlas created."
 fi
+
 if [ -n "$thal_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $thal_atlas >> $logdir/network_files/composite_atlas.byu
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/basalTh/thal/deform/deform_${line}_thal_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/basalTh/thal/deform/deform_${line}_thal_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Thalamus composites and atlas created."
 fi
+
 if [ -n "$hipp_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $hipp_atlas >> $logdir/network_files/composite_atlas.byu
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/HiAm/hipp/deform/deform_${line}_hipp_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/HiAm/hipp/deform/deform_${line}_hipp_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Hippocampus composites and atlas created."
 fi
+
 if [ -n "$amyg_atlas" ]; then
     grep -E '[0-9]+\.[0-9]+' $amyg_atlas >> $logdir/network_files/composite_atlas.byu
+		cat $subj_list | while read line; do
+			if [[ ! -e $amp_dir/HiAm/amyg/deform/deform_${line}_amyg_rl.amp ]]; then
+				continue
+			fi
+			cat $amp_dir/HiAm/amyg/deform/deform_${line}_amyg_rl.amp >> $logdir/amp_composite/deform_${line}_comp_rl.amp
+		done
+		echo "Amygdala composites and atlas created."
 fi
+
+echo "Now building composite path files for export to matlab."
+
+#build path files to deform_${line}_comp_rl.amp fileparts
+cat $subj_list | while read line; do
+	echo "$logdir/amp_composite/deform_${line}_comp_rl.amp" >> $logdir/network_files/amp_comp_path.txt
+done
+
+#export essential variables to the matlab environment
+amp_comp_path=$logdir/network_files/amp_comp_path.txt
+echo "amp_comp_path='$amp_comp_path'" >> $logdir/network_files/variables.txt
+composite_atlas=$logdir/network_files/composite_atlas.byu
+echo "composite_atlas='$composite_atlas'" >> $logdir/network_files/variables.txt
+network_group=$logdir/network_files/group.txt
+echo "network_group='$network_group'" >> $logdir/network_files/variables.txt
+
+matlab -nodisplay -r "run('$logdir/network_files/variables.txt');"
+matlab -nodisplay -r "run('$graph_matlab')"

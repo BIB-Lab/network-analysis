@@ -69,6 +69,11 @@ for flag in "${ROIs[@]}"; do
         read -p "Where is the $flag atlas located? " ${flag}_atlas
 done
 
+echo "Where is your BRAPH 1.0.0 Package Located?"
+read braph_path
+
+echo "The BRAPH 1.0.0 Package is located at $braph_path"
+
 #Create a README.txt file with general information about network analysis
 echo "Network analysis was initiated on $fulldate" >> $logdir/README.txt
 echo "" >> $logdir/README.txt
@@ -182,11 +187,12 @@ done
 
 #export essential variables to the matlab environment
 amp_comp_path=$logdir/network_files/amp_comp_path.txt
-echo "amp_comp_path='$amp_comp_path'" >> $logdir/network_files/variables.txt
+echo "amp_comp_path='$amp_comp_path'" >> $logdir/network_files/variables.m
 composite_atlas=$logdir/network_files/composite_atlas.byu
-echo "composite_atlas='$composite_atlas'" >> $logdir/network_files/variables.txt
+echo "composite_atlas='$composite_atlas'" >> $logdir/network_files/variables.m
 network_group=$logdir/network_files/group.txt
-echo "network_group='$network_group'" >> $logdir/network_files/variables.txt
+echo "network_group='$network_group'" >> $logdir/network_files/variables.m
+echo "braph_path='$braph_path'" >> $logdir/network_files/variables.m
 
-matlab -nodisplay -r "run('$logdir/network_files/variables.txt');"
-matlab -nodisplay -r "run('$graph_matlab')"
+#Run BRAPH analysis
+matlab -nodisplay -r "run('$logdir/network_files/variables.m'); run('$graph_matlab'); exit"

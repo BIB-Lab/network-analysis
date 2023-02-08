@@ -185,14 +185,50 @@ cat $subj_list | while read line; do
 	echo "$logdir/amp_composite/deform_${line}_comp_rl.amp" >> $logdir/network_files/amp_comp_path.txt
 done
 
+echo "Now building group affiliation files for cohort input."
+
+#Building individual group affiliations for input to cohort in matlab
+cat $group_info | while read line; do
+  if [[ -z $line ]]; then
+    continue
+  fi
+  if [[ ! -e $logdir/network_files/${line}_group.txt ]]; then
+    cat $group_info | while read group; do
+      if [[ $line == $group ]]; then
+        echo "1" >> $logdir/network_files/${line}_group.txt
+      else
+        echo "0" >> $logdir/network_files/${line}_group.txt
+      fi
+    done
+    echo "${line}_group.txt" >> $logdir/network_files/groupnames.txt
+  else
+    continue
+  fi
+done
+
+echo "Exporting Variables."
+
+cat $logdir/network_files/groupnames.txt | while read line; do
+	echo "${line%.txt}='$logdir/network_files/${line}'" >> $logdir/network_files/variables.m
+	echo "${line%.txt}" >> $logdir/network_files/group_noext.txt
+done
+
 #export essential variables to the matlab environment
 amp_comp_path=$logdir/network_files/amp_comp_path.txt
-echo "amp_comp_path='$amp_comp_path'" >> $logdir/network_files/variables.m
 composite_atlas=$logdir/network_files/composite_atlas.byu
+measure_write=$amp_dir/net_analysis_${timestamp}/measures/
+comp_write=$amp_dir/net_analysis_${timestamp}/comparisons/
+randcomp_write=$amp_dir/net_analysis_${timestamp}/random_comp/
+
+echo "amp_comp_path='$amp_comp_path'" >> $logdir/network_files/variables.m
 echo "composite_atlas='$composite_atlas'" >> $logdir/network_files/variables.m
-network_group=$logdir/network_files/group.txt
-echo "network_group='$network_group'" >> $logdir/network_files/variables.m
+echo "measure_write='$measure_write'" >> $logdir/network_files/variables.m
+echo "comp_write='$comp_write'" >> $logdir/network_files/variables.m
+echo "randcomp_write='$randcomp_write'" >> $logdir/network_files/variables.m
 echo "braph_path='$braph_path'" >> $logdir/network_files/variables.m
+echo "group_noext='$logdir/network_files/group_noext.txt'" >> $logdir/network_files/variables.m
+
+echo "Running Matlab..."
 
 #Run BRAPH analysis
 matlab -nodisplay -r "run('$logdir/network_files/variables.m'); run('$graph_matlab'); exit"

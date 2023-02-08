@@ -39,7 +39,6 @@ end
 atlas = BrainAtlas(brs,BrainAtlas.NAME,'Atlas1');
 
 %% create subjects
-groupinfo = readmatrix(network_group,'FileType','delimitedtext');
 subjlist = importdata(amp_comp_path);
 sub = {};
 
@@ -63,14 +62,21 @@ end
 
 %% create cohort
 
-scz_group = groupinfo;
-con_group = 1 - scz_group;
-
 cohort = MRICohort(atlas,sub,MRICohort.NAME,'Cohort Trial');
-g1 = Group(Group.NAME,'scz_group',Group.DATA,scz_group,Group.NOTES,'scz_group');
-g2 = Group(Group.NAME,'con_group',Group.DATA,con_group,Group.NOTES,'con_group');
-cohort.addgroup(g1)
-cohort.addgroup(g2)
+groupnames = fileread(group_noext)
+
+groupnumber = strsplit(groupnames);
+edit_groNum = groupnumber(1:end-1);
+grouplength = length(edit_groNum);
+  for groupfile = 1:grouplength
+    current_group = edit_groNum{groupfile};
+
+% Use the eval() function to access the variable in the Matlab environment
+    data = load(eval(current_group));
+    g = Group(Group.NAME,current_group,Group.DATA,data,Group.NOTES,current_group);
+    cohort.addgroup(g);
+end
+
 disp('Cohort generated.')
 
 %% Create MRI graph analysis
@@ -128,7 +134,7 @@ clear gr;
 
                 if Graph.isglobal(measurecode)
                     file_name = strcat(Graph.NAME{measurecode},'_',gr.getPropValue(Group.NAME),'.txt');
-                    file_path = fullfile('/Users/aaclouse/Desktop/measures/',file_name);
+                    file_path = fullfile(measure_write,file_name);
                     fid = fopen(file_path,'w');
 
                     fprintf(fid,'=== === ===\n');
@@ -152,7 +158,7 @@ clear gr;
                     disp(['Average (over regions) measure value = ' num2str(mean(values))])
 
                     file_name = strcat(Graph.NAME{measurecode},'_',gr.getPropValue(Group.NAME),'.csv');
-                    file_path = fullfile('/Users/aaclouse/Desktop/measures/',file_name);
+                    file_path = fullfile(measure_write,file_name);
                     fid = fopen(file_path,'w');
                     fprintf(fid,'%s,vertex\n',Graph.NAME{measurecode});
                     ba = ga.getBrainAtlas();
@@ -192,7 +198,7 @@ clear gr;
 
                 if Graph.isglobal(measurecode)
                     file_name = strcat(Graph.NAME{measurecode},'_',gr1.getPropValue(Group.NAME),'_',gr2.getPropValue(Group.NAME),'.txt');
-                    file_path = fullfile('/Users/aaclouse/Desktop/comparisons/',file_name);
+                    file_path = fullfile(comp_write,file_name);
                     fid = fopen(file_path,'w');
 
                     fprintf(fid,'=== === ===\n');
@@ -226,7 +232,7 @@ clear gr;
                     disp(['con.int.up  (per region) = ' num2str(ci(2,:))])
 
                     file_name = strcat(Graph.NAME{measurecode},'_',gr1.getPropValue(Group.NAME),'_',gr2.getPropValue(Group.NAME),'.csv');
-                    file_path = fullfile('/Users/aaclouse/Desktop/comparisons/',file_name);
+                    file_path = fullfile(comp_write,file_name);
                     fid = fopen(file_path,'w');
                     fprintf(fid,'differences,vertex,p1,p2,ci_low,ci_high\n');
 
@@ -261,7 +267,7 @@ clear gr;
 
                 if Graph.isglobal(measurecode)
                     file_name = strcat(Graph.NAME{measurecode},'_rcomp_',gr.getPropValue(Group.NAME),'.txt');
-                    file_path = fullfile('/Users/aaclouse/Desktop/random_comp/',file_name);
+                    file_path = fullfile(randcomp_write,file_name);
                     fid = fopen(file_path,'w');
 
                     fprintf(fid,'=== === ===\n');
@@ -300,7 +306,7 @@ clear gr;
                     disp(['con.int.up  (per region) = ' num2str(ci(2,:))])
 
                     file_name = strcat(Graph.NAME{measurecode},'_rcomp_',gr.getPropValue(Group.NAME),'.csv');
-                    file_path = fullfile('/Users/aaclouse/Desktop/random_comp/',file_name);
+                    file_path = fullfile(randcomp_write,file_name);
                     fid = fopen(file_path,'w');
                     fprintf(fid,'differences,vertex,p1,p2,ci_low,ci_high\n');
 
